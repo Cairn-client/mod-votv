@@ -49,3 +49,8 @@ committed blob stays reachable.
 If this directory is ever emptied, restock from any dev install
 (`Game_0.9.0n_HOST/WindowsNoEditor/VotV/Content/Paks/LogicMods/multivoid/`) or rebuild from the
 model sources with the converter.
+
+## Cairn fork
+
+The starter-skin paks are community conversions of third-party game assets with no licence, so this fork does not ship them.
+The folder is left empty on purpose; the release package skips it when it holds no pak.
