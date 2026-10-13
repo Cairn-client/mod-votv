@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "id": "votv",
+  "name": "Voices of the Void",
+  "developer": "MrDrNose",
+  "franchise": "Voices of the Void",
+  "exe": "VotV.exe",
+  "description": "Gather signals from deep space with up to three friends. Multivoid adds drop-in co-op to Voices of the Void: other players, shared props, creatures, events and the signal pipeline.",
+  "accent": "#5BC0DE",
+  "images": {
+    "poster": "votv-poster.png"
+  },
+  "ownSession": true,
+  "setup": [
+    { "kind": "game-found", "detail": "Voices of the Void is not on Steam: press Locate game... and pick VotV.exe, the one inside the WindowsNoEditor folder." },
+    { "kind": "mod-installed", "detail": "Download the mod above: Cairn puts it, and the loader it needs, in the game's folder." }
+  ],
+  "hostSteps": [
+    "Download the mod above, then press Locate game... once and pick VotV.exe from the game's WindowsNoEditor folder.",
+    "Press Play. The main menu shows a Multiplayer entry with the Multivoid version.",
+    "Choose Multiplayer and host. Your world and save are the session's single source of truth.",
+    "Friends join from the server browser or by your address."
+  ],
+  "joinSteps": [
+    "Download the mod above, the same version as the host's, locate VotV.exe once and press Play.",
+    "In the main menu choose Multiplayer, then pick a lobby or type the host's address.",
+    "A join between two different versions is refused with a message saying which side is older."
+  ],
+  "features": [
+    { "title": "Sessions", "items": [
+      { "name": "Host and join", "detail": "One host and up to three friends, by address or from the server browser. Both sides need the same version of the mod.", "status": "inTest" },
+      { "name": "Join at any time", "detail": "A player who connects receives the host's whole world, even in the middle of an event.", "status": "inTest" },
+      { "name": "Kept up to date", "detail": "Cairn installs the mod and its loader in the game's folder and updates them when a new version is released." }
+    ] },
+    { "title": "Players and world", "items": [
+      { "name": "Other players", "detail": "Bodies, footsteps, name plates, text chat and positional voice chat.", "status": "inTest" },
+      { "name": "The shared world", "detail": "Props, creatures, events, weather, doors and the signal-processing pipeline are kept in step.", "status": "inTest" }
+    ] }
+  ]
+}
