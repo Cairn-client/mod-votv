@@ -43,6 +43,7 @@ CLOSE_PREFIX = "[docs] close:"
 # tag points past them). Short sha -> why. The gate is about what is written from now on.
 GRANDFATHERED = {
     "caa79fa3": "removing the unlicensed skin paks, written without a scope",
+    "4ed123d5": "a subject over the length limit, already published",
 }
 
 SCOPE_RE = re.compile(r"^\[[a-z0-9][a-z0-9_.-]*\] \S")
