@@ -1,0 +1,87 @@
+# A Cairn release is a bare X.Y.Z tag on main. It builds the mod with the project's own build (build-core.yml, the same
+# one its CI uses), puts the package it makes with the UE4SS build this project pins into a Cairn mod pack
+# (.github/cairn/Build-Pack.ps1) and publishes the pack, pack-index.json and game.json: the Cairn launcher reads the index to
+# install and update this mod. RELEASE_CHANNEL=beta publishes a pre-release (only players who chose beta are offered it).
+name: cairn-release
+
+on:
+  push:
+    tags: ['[0-9]+.[0-9]+.[0-9]+']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    uses: ./.github/workflows/build-core.yml
+    with:
+      ref: ${{ github.sha }}
+      source-sha: ${{ github.sha }}
+      use-cache: false
+
+  pack:
+    needs: build
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: The tag must be on main and equal VERSION
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        run: |
+          git fetch origin main
+          git merge-base --is-ancestor $env:GITHUB_SHA origin/main
+          if ($LASTEXITCODE -ne 0) { throw "tag $env:GITHUB_REF_NAME is not on main" }
+          $v = (Get-Content VERSION -TotalCount 1).Trim()
+          if ($v -ne $env:GITHUB_REF_NAME) { throw "tag $env:GITHUB_REF_NAME is not VERSION ($v)" }
+
+      - name: Download the build
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ${{ needs.build.outputs.artifact-name }}
+          path: _build
+
+      - name: Get the UE4SS build the project pins
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dl | Out-Null
+          Invoke-WebRequest https://thunderstore.io/package/download/Thunderstore/unreal_shimloader/1.1.7/ -OutFile dl/loader.zip -UseBasicParsing
+          $h = (Get-FileHash dl/loader.zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          Write-Host "unreal_shimloader 1.1.7 sha256 $h"
+          if ($h -ne '8deaf2a7246370f4e30f65af37645cdef481a28cb353d7285c3a62576bcba853') { throw "the loader package is not the one this pack was made with ($h)" }
+
+      - name: Build the pack
+        shell: pwsh
+        run: |
+          $pkg = @(Get-ChildItem _build -Recurse -Filter '*Multivoid*.zip')
+          if ($pkg.Count -ne 1) { throw "expected one package zip in the build, found $($pkg.Count)" }
+          ./.github/cairn/Build-Pack.ps1 -PackageZip $pkg[0].FullName -LoaderZip dl/loader.zip
+
+      - name: Changelog
+        shell: pwsh
+        run: ./.github/cairn/New-ReleaseNotes.ps1 -OutFile notes.md -Tag $env:GITHUB_REF_NAME
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: cairn-pack
+          path: |
+            release/Cairn-Pack-votv-*.zip
+            release/pack-index.json
+            .github/cairn/game/game.json
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $assets = @("release/Cairn-Pack-votv-$env:GITHUB_REF_NAME.zip", 'release/pack-index.json') + (Get-ChildItem .github/cairn/game -File | ForEach-Object { $_.FullName })
+          $flags = @()
+          if ((Get-Content RELEASE_CHANNEL -Raw).Trim() -eq 'beta') { $flags += '--prerelease' }
+          gh release create $env:GITHUB_REF_NAME @assets --title $env:GITHUB_REF_NAME --notes-file notes.md --verify-tag @flags
