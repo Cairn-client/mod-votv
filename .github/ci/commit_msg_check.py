@@ -39,6 +39,12 @@ SUBJECT_MAX = 72
 BODY_MAX_LINES = 12
 CLOSE_PREFIX = "[docs] close:"
 
+# Commits that were made before the Cairn pack work kept the scope rule, left as they are: the history is not rewritten (the release
+# tag points past them). Short sha -> why. The gate is about what is written from now on.
+GRANDFATHERED = {
+    "caa79fa3": "removing the unlicensed skin paks, written without a scope",
+}
+
 SCOPE_RE = re.compile(r"^\[[a-z0-9][a-z0-9_.-]*\] \S")
 EXEMPT_SUBJECT_RE = re.compile(r'^(Merge (branch|remote-tracking branch|pull request|tag|commit)\b|Revert "|fixup! |squash! )')
 TRAILER_LINE_RE = re.compile(r"^([A-Za-z][A-Za-z0-9-]*): \S")
@@ -236,6 +242,8 @@ def check_range(repo, rng, empty_ok=True):
         sha, _, body = rec.lstrip("\n").partition("\n")
         subject = body.split("\n", 1)[0]
         total += 1
+        if any(sha.startswith(short) for short in GRANDFATHERED):
+            continue
         refusals = check_message(body, allow_close=True)   # a recorded close was made by the script
         if refusals:
             bad += 1
