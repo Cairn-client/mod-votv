@@ -8,7 +8,10 @@
   "description": "Gather signals from deep space with up to three friends. Multivoid adds drop-in co-op to Voices of the Void: other players, shared props, creatures, events and the signal pipeline.",
   "accent": "#5BC0DE",
   "images": {
-    "poster": "votv-poster.png"
+    "background": "votv.jpg",
+    "logo": "votv-logo.png",
+    "poster": "votv-poster.png",
+    "screenshots": [ "votv-shot-1.jpg" ]
   },
   "ownSession": true,
   "setup": [
